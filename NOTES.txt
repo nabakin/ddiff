@@ -8,7 +8,7 @@ Have option to enter max mem size, program calculates average miss rate, tells u
      Else, compare against a trie of file hashes.
        If not found in trie, add to list of new files in larger.
        If found in trie, indicate file exists.
-   Else, indicate file exists.
+   Else, compare with single file. (Comparison multithreading?  Depends on if big file and read speed.)
 3. Determine which files do not exist in smaller (from indicators)
 4. Report results, maybe export to directory? Could be option?
 
@@ -22,3 +22,5 @@ Trie size scaling:
 When need to calculate hash trie, bloom, etc, then it searches relvant directory for files matching file size.  Populates trie/bloom/whatever
 
 Compare files directly when certain number (faster than hashes) and load into buffer when compare for more efficient. -- first see how many file size collisions we get
+
+Use multithreading to compare files (hashes/bloom filters/file sizes).  Can reference same memory from all threads!

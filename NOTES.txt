@@ -1,0 +1,24 @@
+Bloom filter + trie + hash + research more algos
+Have option to enter max mem size, program calculates average miss rate, tells user, and optimizes for it.
+
+1. Compare larger directory against a file sizes trie of smaller directory
+2. If not found in trie, add to list of new files in larger.
+   If found in trie and more than one in list, take list of all files with size and apply a bloom filter.
+     If not found in bloom filter, add to list of new files in larger.
+     Else, compare against a trie of file hashes.
+       If not found in trie, add to list of new files in larger.
+       If found in trie, indicate file exists.
+   Else, indicate file exists.
+3. Determine which files do not exist in smaller (from indicators)
+4. Report results, maybe export to directory? Could be option?
+
+Option to modify hashing probability
+
+Trie size scaling:
+ - watch lower 6 numbers for 200k files and only take up 8.5mb of memory 200k/1000k
+ - watch lower 5 numbers for 20k files and only take up 0.85mb of memory 20k/100k
+ - watch lower 4 numbers for 2k files and only take up 0.085mb of memory 2k/10k
+
+When need to calculate hash trie, bloom, etc, then it searches relvant directory for files matching file size.  Populates trie/bloom/whatever
+
+Compare files directly when certain number (faster than hashes) and load into buffer when compare for more efficient. -- first see how many file size collisions we get

@@ -1,5 +1,8 @@
 # ddiff
 
+Windows: `cl /I "libs" main.c`
+Linux: `gcc main.c -lm`
+
 ## Ideas:
 - Processing option to compare via hashes
 - Processing option to compare file names only

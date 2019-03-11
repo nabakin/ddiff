@@ -24,3 +24,7 @@ When need to calculate hash trie, bloom, etc, then it searches relvant directory
 Compare files directly when certain number (faster than hashes) and load into buffer when compare for more efficient. -- first see how many file size collisions we get
 
 Use multithreading to compare files (hashes/bloom filters/file sizes).  Can reference same memory from all threads!
+
+Problem:  Amount of memory allocation calls.  Solution?: Bulk allocation? Memory pool?
+
+Checksum or file size?

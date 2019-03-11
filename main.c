@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <dirent.h>
@@ -12,13 +12,30 @@ typedef struct TrieNode
   struct TrieNode *children;
 } TNode;
 
+typedef struct FSTrie
+{
+  TNode *children;
+} FSTrie;
+
+typedef struct FSTNode
+{
+  struct FSTNode *next;
+  struct FSTree *tree;
+} FSTNode;
+
+typedef struct FSTree
+{
+  struct FSTNode *directories;
+  FSTrie *files;
+} FSTree;
+
 int isDirectory(const char *path)
 {
   struct stat statbuf;
-  
+
   if (stat(path, &statbuf) != 0)
     return 0;
-  
+
   return S_ISDIR(statbuf.st_mode);
 }
 
@@ -32,47 +49,77 @@ char* concat(char *s1, char *s2, char *s3)
   int i;
   for (i=0; i<s1_length; i++)
     result[i] = s1[i];
-  
+
   int j;
   for (j=0; j<s2_length; j++)
     result[i+j] = s2[j];
-  
+
   i = i+j;
-  
+
   for (j=0; j<s3_length; j++)
     result[i+j] = s3[j];
-  
+
   result[i+j] = '\0';
 
   return result;
 }
 
+/**
+ * Get the size of a file.
+ * @param filename The name of the file to check size for
+ * @return The filesize, or 0 if the file does not exist.
+ */
 long long getFileSize(char *filepath)
 {
   struct stat st;
-  stat(filepath, &st);
-  
+
+  if(stat(filepath, &st) != 0) {
+    return 0;
+  }
+
   return st.st_size;
+}
+
+long long getFolderSize(char *path)
+{
+  DIR *dir = opendir(path);
+  struct dirent *dp = readdir(dir);
+  long long dirsize = 0;
+
+  if (dp != NULL)
+  {
+    while ((dp = readdir(dir)) != NULL)
+    {
+      char *name = concat(path, "/", dp->d_name);
+
+      if (isDirectory(name))
+        dirsize += getFolderSize(name);
+      else
+        dirsize += getFileSize(name);
+    }
+  }
+
+  return dirsize;
 }
 
 void print_dir(char *path)
 {
   struct dirent *dp;
   DIR *dir = opendir(path);
-  
+
   readdir(dir); // Cycle through ".." directory
   dp = readdir(dir);
-  
+
   if (dp != NULL)
   {
     //head = (TNode*) malloc(sizeof(TNode));
     //head->children = (TNode*) malloc(sizeof(TNode)*DIGIT_SIZE);
     //current_node = head;
-    
+
     while ((dp = readdir(dir)) != NULL)
     {
       char *name = concat(path, "/", dp->d_name);
-      
+
       if (isDirectory(name))
       {
         printf("DIR: %s %s\n", dp->d_name, name);
@@ -92,23 +139,40 @@ int main(int argc, char **argv)
 {
   if (argc != 3 || !isDirectory(argv[1]) || !isDirectory(argv[2]))
     return 1;
-  
-  //struct dirent *dp;
+
+  char *old_dir = argv[1];
+  char *new_dir = argv[2];
+
+  struct dirent *dp;
   TNode *head, *current_node;
-  
+
   print_dir(argv[1]);
-  /*DIR *old_dir = opendir(argv[1]);
-  DIR *new_dir = opendir(argv[2]);
-  
-  readdir(old_dir); // Cycle through ".." directory
-  dp = readdir(old_dir);
-  
+
+  char *large_dir;
+  char *small_dir;
+
+  if (getFolderSize(argv[1]) > getFolderSize(argv[2]))
+  {
+    large_dir = argv[1];
+    small_dir = argv[2];
+  }
+  else
+  {
+    large_dir = argv[2];
+    small_dir = argv[1];
+  }
+
+  //FSTrie *small_dir_trie = populateFilesizeTree(small_dir);
+
+  /*readdir(small_dir); // Cycle through ".." directory
+  dp = readdir(small_dir);
+
   if (dp != NULL)
   {
     head = (TNode*) malloc(sizeof(TNode));
     head->children = (TNode*) malloc(sizeof(TNode)*DIGIT_SIZE);
     current_node = head;
-    
+
     while ((dp = readdir(old_dir)) != NULL)
     {
       char *name = concat(concat(argv[1], "/"), dp->d_name);
@@ -116,18 +180,18 @@ int main(int argc, char **argv)
         printf("DIR: %s %s\n", dp->d_name, name);
       current_node->next = (Node*) malloc(sizeof(Node));
       current_node = current_node->next;
-      
+
       current_dnode = (DNode*) malloc(sizeof(DNode));
       current_dnode->name = (char*) malloc(sizeof(char)*strlen(dp->d_name));
       strcpy(current_dnode->name, dp->d_name);
       current_dnode->hashes = NULL;//buildTrie(dp);
-      
+
       printf("DIR: %s\n", current_dnode->name);
-      
+
       current_node->data = current_dnode;
       current_node->next = NULL;
     }
   }*/
-  
+
   return 0;
 }

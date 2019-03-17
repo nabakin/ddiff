@@ -9,7 +9,7 @@
 
 typedef struct TrieNode
 {
-  struct TrieNode *children;
+  struct TrieNode *children[10];
 } TNode;
 
 int isDirectory(const char *path)
@@ -98,6 +98,58 @@ int *parseData(int data, int tailSize)
   return parsedData;
 }
 
+TNode *createNode()
+{
+  return calloc(1, sizeof(TNode));
+}
+
+void insertFSItem(TNode *root, char *path)
+{
+  int *size = parseData((int) getFileSize(path) % 10000, 4);
+  int sizeIndex;
+  
+  for (int i=0; i<4; i++)
+  {
+    sizeIndex = size[i];
+    
+    if (root->children[sizeIndex] == NULL)
+      root->children[sizeIndex] = createNode();
+    
+    root = root->children[sizeIndex];
+  }
+}
+
+void populateFilesizeTrieHelper(char *path, TNode *fstrie)
+{
+  struct dirent *dp;
+  DIR *dir = opendir(path);
+  
+  readdir(dir);
+  dp = readdir(dir);
+  
+  if (dp != NULL)
+  {
+    while ((dp = readdir(dir)) != NULL)
+    {
+      char *name = concat(path, "/", dp->d_name);
+
+      if (isDirectory(name))
+        populateFilesizeTrieHelper(name, fstrie);
+      else
+        insertFSItem(fstrie, name);
+    }
+  }
+}
+
+TNode *populateFilesizeTrie(char *path)
+{
+  TNode *fstrie = createNode();
+
+  populateFilesizeTrieHelper(path, fstrie);
+
+  return fstrie;
+}
+
 void print_dir(char *path)
 {
   struct dirent *dp;
@@ -142,7 +194,7 @@ int main(int argc, char **argv)
   struct dirent *dp;
   TNode *head, *current_node;
 
-  print_dir(argv[1]);
+  //print_dir(argv[1]);
 
   char *large_dir;
   char *small_dir;
@@ -157,8 +209,8 @@ int main(int argc, char **argv)
     large_dir = argv[2];
     small_dir = argv[1];
   }
-
-  FSTrie *small_dir_trie = populateFilesizeTree(small_dir);
+  
+  TNode *small_dir_trie = populateFilesizeTrie(old_dir);
 
   /*readdir(small_dir); // Cycle through ".." directory
   dp = readdir(small_dir);

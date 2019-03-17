@@ -184,6 +184,35 @@ void print_dir(char *path)
   }
 }
 
+void printTrieHelper(TNode *root, char *buffer, int k)
+{
+  int i;
+
+	if (root == NULL)
+		return;
+
+  if (k == 4)
+    printf("%s\n", buffer);
+
+	buffer[k+1] = '\0';
+
+	for (i = 0; i < 10; i++)
+	{
+		buffer[k] = '0' + i;
+
+		printTrieHelper(root->children[i], buffer, k+1);
+	}
+
+	buffer[k] = '\0';
+}
+
+void printTrie(TNode *root)
+{
+  char buffer[1024];
+  
+  printTrieHelper(root, buffer, 0);
+}
+
 int main(int argc, char **argv)
 {
   if (argc != 3 || !isDirectory(argv[1]) || !isDirectory(argv[2]))
@@ -212,6 +241,7 @@ int main(int argc, char **argv)
   }
   
   TNode *small_dir_trie = populateFilesizeTrie(old_dir);
+  printTrie(small_dir_trie);
 
   /*readdir(small_dir); // Cycle through ".." directory
   dp = readdir(small_dir);

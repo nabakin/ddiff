@@ -12,23 +12,6 @@ typedef struct TrieNode
   struct TrieNode *children;
 } TNode;
 
-typedef struct FSTrie
-{
-  TNode *children;
-} FSTrie;
-
-typedef struct FSTNode
-{
-  struct FSTNode *next;
-  struct FSTree *tree;
-} FSTNode;
-
-typedef struct FSTree
-{
-  struct FSTNode *directories;
-  FSTrie *files;
-} FSTree;
-
 int isDirectory(const char *path)
 {
   struct stat statbuf;
@@ -102,6 +85,19 @@ long long getFolderSize(char *path)
   return dirsize;
 }
 
+int *parseData(int data, int tailSize)
+{
+  int *parsedData = malloc(sizeof(int)*tailSize);
+  
+  for (int i=tailSize; i>0; i--)
+  {
+    parsedData[i-1] = data % 10;
+    data /= 10;
+  }
+  
+  return parsedData;
+}
+
 void print_dir(char *path)
 {
   struct dirent *dp;
@@ -162,7 +158,7 @@ int main(int argc, char **argv)
     small_dir = argv[1];
   }
 
-  //FSTrie *small_dir_trie = populateFilesizeTree(small_dir);
+  FSTrie *small_dir_trie = populateFilesizeTree(small_dir);
 
   /*readdir(small_dir); // Cycle through ".." directory
   dp = readdir(small_dir);

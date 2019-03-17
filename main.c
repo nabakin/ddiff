@@ -66,6 +66,7 @@ long long getFileSize(char *filepath)
 long long getFolderSize(char *path)
 {
   DIR *dir = opendir(path);
+  readdir(dir);
   struct dirent *dp = readdir(dir);
   long long dirsize = 0;
 
